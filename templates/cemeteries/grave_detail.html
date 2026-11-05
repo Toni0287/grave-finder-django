@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ grave.full_name }}{% endblock %}
+{% block head %}{% include "includes/leaflet_head.html" with routing=True %}{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="no-print">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'cemeteries:search' %}">Search</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ grave.full_name }}</li>
+  </ol>
+</nav>
+
+<article class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h3 mb-1">{{ grave.full_name }}</h1>
+        <p class="text-muted">
+          {% if grave.birth_year %}{{ grave.birth_year }} – {% endif %}{{ grave.date_of_death|date:"Y" }}
+          {% if grave.age_at_death %}· aged {{ grave.age_at_death }}{% endif %}
+        </p>
+
+        <dl class="row small mb-0">
+          <dt class="col-5">Cemetery</dt>
+          <dd class="col-7">{{ grave.cemetery.name }} <span class="badge text-bg-light border">{{ grave.cemetery.get_type_display }}</span></dd>
+          <dt class="col-5">Address</dt><dd class="col-7">{{ grave.cemetery.address|default:"—" }}</dd>
+          <dt class="col-5">Location</dt><dd class="col-7">{{ grave.location_label }}</dd>
+          <dt class="col-5">Plot size</dt><dd class="col-7">{{ grave.plot_size }}</dd>
+          <dt class="col-5">Date of death</dt><dd class="col-7">{{ grave.date_of_death|date:"j F Y" }}</dd>
+          <dt class="col-5">Date of burial</dt><dd class="col-7">{{ grave.date_of_burial|date:"j F Y"|default:"—" }}</dd>
+          <dt class="col-5">GPS</dt><dd class="col-7"><code>{{ grave.latitude|floatformat:5 }}, {{ grave.longitude|floatformat:5 }}</code></dd>
+        </dl>
+      </div>
+      <div class="card-footer bg-white d-flex flex-wrap gap-2 no-print">
+        <a class="btn btn-sm btn-outline-secondary" href="{% url 'cemeteries:grave_print' grave.pk %}" target="_blank"><i class="bi bi-printer" aria-hidden="true"></i> Print</a>
+        <button class="btn btn-sm btn-outline-secondary" id="share-btn" type="button" data-text="Grave of {{ grave.full_name }} at {{ grave.cemetery.name }}"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
+        {% if user.is_authenticated and user.is_cemetery_staff %}
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'cemeteries:grave_update' grave.pk %}">Edit</a>
+          <a class="btn btn-sm btn-outline-danger" href="{% url 'cemeteries:grave_delete' grave.pk %}">Remove</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+      <div class="card-body">
+        {% if memorial %}
+          <h2 class="h6">Memorial page</h2>
+          <p class="small mb-2">Family and friends have created a memorial for {{ grave.first_name }}.</p>
+          <a class="btn btn-primary btn-sm" href="{{ memorial.get_absolute_url }}">Visit the memorial</a>
+        {% else %}
+          <h2 class="h6">Honour {{ grave.first_name }}</h2>
+          <p class="small mb-2">Create a memorial page to share stories, photos and condolences.</p>
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'memorials:create' %}?grave={{ grave.pk }}">Create a memorial</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div id="grave-map" class="map shadow-sm" role="region" aria-label="Map showing the grave"></div>
+    <div class="d-flex flex-wrap gap-2 align-items-center mt-3 no-print">
+      <button class="btn btn-primary" id="directions-btn" type="button"><i class="bi bi-sign-turn-right" aria-hidden="true"></i> Directions from my location</button>
+      <a class="btn btn-outline-secondary" target="_blank" rel="noopener"
+         href="https://www.google.com/maps/dir/?api=1&destination={{ grave.latitude }},{{ grave.longitude }}">Open in Google Maps</a>
+    </div>
+    <p id="directions-status" class="small text-muted mt-2" aria-live="polite"></p>
+  </div>
+</article>
+{{ marker|json_script:"grave-data" }}
+{% endblock %}
+
+{% block scripts %}
+{% include "includes/leaflet_scripts.html" with routing=True %}
+<script>
+  GraveFinder.graveMap("grave-map", "grave-data");
+  GraveFinder.shareButton("share-btn");
+</script>
+{% endblock %}

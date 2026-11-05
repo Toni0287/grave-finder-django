@@ -1,0 +1,60 @@
+:root {
+  --gf-primary: #2f4858;
+  --gf-accent: #86bbd8;
+  --gf-warm: #c97b63;
+  --bs-primary: #2f4858;
+  --bs-primary-rgb: 47, 72, 88;
+  --bs-link-color: #2c6e8f;
+  --bs-link-color-rgb: 44, 110, 143;
+}
+
+body { background: #f6f7f9; }
+
+.gf-navbar { background: var(--gf-primary); }
+.gf-footer { background: #e9ecef; color: #555; }
+
+.btn-primary {
+  --bs-btn-bg: var(--gf-primary);
+  --bs-btn-border-color: var(--gf-primary);
+  --bs-btn-hover-bg: #233845;
+  --bs-btn-hover-border-color: #233845;
+  --bs-btn-active-bg: #1b2c37;
+}
+.btn-donate {
+  --bs-btn-bg: var(--gf-warm);
+  --bs-btn-border-color: var(--gf-warm);
+  --bs-btn-color: #fff;
+  --bs-btn-hover-bg: #b0634c;
+  --bs-btn-hover-border-color: #b0634c;
+  --bs-btn-hover-color: #fff;
+}
+
+.hero {
+  background: linear-gradient(135deg, var(--gf-primary), #3d6b82);
+  color: #fff;
+  border-radius: 1rem;
+}
+
+.stat-card .stat-value { font-size: 2rem; font-weight: 600; line-height: 1.1; }
+.stat-card .stat-label { color: #6c757d; font-size: .875rem; text-transform: uppercase; letter-spacing: .04em; }
+
+.map { height: 420px; border-radius: .75rem; z-index: 0; }
+.map-sm { height: 320px; }
+
+.bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 180px; }
+.bar-chart .bar { flex: 1; background: var(--gf-accent); border-radius: 3px 3px 0 0; min-height: 2px; position: relative; }
+.bar-chart .bar:hover { background: var(--gf-primary); }
+.bar-labels { display: flex; gap: 4px; font-size: .7rem; color: #6c757d; }
+.bar-labels span { flex: 1; text-align: center; }
+
+.memorial-photo { width: 160px; height: 160px; object-fit: cover; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
+.memorial-photo-placeholder { width: 160px; height: 160px; border-radius: 50%; background: #dfe7ec; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: var(--gf-primary); }
+.biography { white-space: pre-line; }
+
+.leaflet-routing-container { max-height: 260px; overflow-y: auto; font-size: .8rem; }
+
+@media print {
+  header, footer, .no-print, .btn { display: none !important; }
+  body { background: #fff; }
+  main { padding: 0 !important; }
+}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}In memory of {{ memorial.full_name }}{% endblock %}
+{% block content %}
+
+{% if not memorial.is_published %}
+<div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
+  <span>This memorial is <strong>{{ memorial.get_status_display|lower }}</strong>. Only you can see it.</span>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <article class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-body text-center p-4">
+        {% if memorial.photo_url %}
+          <img src="{{ memorial.photo_url }}" alt="Photo of {{ memorial.full_name }}" class="memorial-photo mb-3">
+        {% else %}
+          <div class="memorial-photo-placeholder mx-auto mb-3" aria-hidden="true"><i class="bi bi-flower1"></i></div>
+        {% endif %}
+        <p class="text-muted small mb-1">In loving memory of</p>
+        <h1 class="h2">{{ memorial.full_name }}</h1>
+        <p class="text-muted">
+          {{ memorial.birth_date|date:"j F Y"|default:"" }}{% if memorial.birth_date and memorial.death_date %} – {% endif %}{{ memorial.death_date|date:"j F Y"|default:"" }}
+        </p>
+        {% if memorial.tagline %}<p class="fst-italic">“{{ memorial.tagline }}”</p>{% endif %}
+      </div>
+      {% if memorial.biography %}
+      <div class="card-body border-top">
+        <h2 class="h5">Life story</h2>
+        <p class="biography mb-0">{{ memorial.biography }}</p>
+      </div>
+      {% endif %}
+      {% if memorial.grave %}
+      <div class="card-body border-top">
+        <h2 class="h6">Resting place</h2>
+        <p class="mb-2 small">{{ memorial.grave.cemetery.name }} · {{ memorial.grave.location_label }}</p>
+        <a class="btn btn-sm btn-outline-primary" href="{{ memorial.grave.get_absolute_url }}"><i class="bi bi-geo-alt" aria-hidden="true"></i> Map and directions</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <section class="card shadow-sm mt-4" aria-labelledby="condolences-title">
+      <div class="card-body">
+        <h2 id="condolences-title" class="h5">Condolences ({{ condolences|length }})</h2>
+        {% if memorial.is_published %}
+        <form method="post" action="{% url 'memorials:condolence_create' memorial.pk %}" class="mb-4">
+          {% csrf_token %}
+          {% include "includes/form.html" with form=condolence_form %}
+          <button class="btn btn-primary btn-sm" type="submit">Leave a message</button>
+        </form>
+        {% endif %}
+        {% for c in condolences %}
+          <figure class="border-start border-3 ps-3 mb-3">
+            <blockquote class="mb-1 biography">{{ c.message }}</blockquote>
+            <figcaption class="small text-muted">— {{ c.author_name }}, {{ c.created_at|date:"j M Y" }}</figcaption>
+          </figure>
+        {% empty %}
+          <p class="text-muted small mb-0">Be the first to leave a message.</p>
+        {% endfor %}
+      </div>
+    </section>
+  </article>
+
+  <aside class="col-lg-4">
+    {% if can_edit %}
+    <div class="card shadow-sm mb-3">
+      <div class="card-body">
+        <h2 class="h6">Manage</h2>
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="{% url 'memorials:update' memorial.pk %}">Edit</a>
+          <form method="post" action="{% url 'memorials:set_status' memorial.pk %}">
+            {% csrf_token %}
+            {% if memorial.is_published %}
+              <input type="hidden" name="status" value="draft"><button class="btn btn-sm btn-outline-secondary" type="submit">Unpublish</button>
+            {% else %}
+              <input type="hidden" name="status" value="active"><button class="btn btn-sm btn-success" type="submit">Publish</button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if memorial.donations_enabled %}
+    <section class="card shadow-sm" aria-labelledby="support-title">
+      <div class="card-body">
+        <h2 id="support-title" class="h5"><i class="bi bi-heart-fill text-danger" aria-hidden="true"></i> Support the family</h2>
+        <p class="mb-1"><span class="fs-4 fw-semibold">R{{ donation_total|floatformat:"0g" }}</span> raised</p>
+        <p class="small text-muted">from {{ donor_count }} contributor{{ donor_count|pluralize }}</p>
+        {% if memorial.is_published %}
+        <div class="d-grid gap-2 mb-2" style="grid-template-columns: 1fr 1fr;">
+          {% for amount in preset_amounts %}
+            <a class="btn btn-outline-secondary btn-sm" href="{% url 'memorials:donate' memorial.pk %}?amount={{ amount }}">R{{ amount }}</a>
+          {% endfor %}
+        </div>
+        <a class="btn btn-donate w-100" href="{% url 'memorials:donate' memorial.pk %}">Donate</a>
+        {% endif %}
+        {% if recent_donations %}
+        <h3 class="h6 mt-3">Recent support</h3>
+        <ul class="list-unstyled small mb-0">
+          {% for d in recent_donations %}<li>{{ d.display_name }} · R{{ d.amount|floatformat:"0" }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

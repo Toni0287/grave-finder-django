@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Thank you{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6 text-center">
+    <i class="bi bi-heart-fill text-danger display-4" aria-hidden="true"></i>
+    {% if donation.status == "completed" %}
+      <h1 class="h3 mt-3">Thank you, {{ donation.donor_name }}</h1>
+      <p>Your gift of <strong>R{{ donation.amount }}</strong> in memory of {{ donation.memorial.full_name }} has been received.
+        R{{ donation.family_amount }} goes to the family.</p>
+    {% elif donation.status == "pending" %}
+      <h1 class="h3 mt-3">Payment processing</h1>
+      <p>We are waiting for PayFast to confirm your payment. This page will show it once it arrives.</p>
+    {% else %}
+      <h1 class="h3 mt-3">Payment not completed</h1>
+      <p>Your payment did not go through. No money was taken.</p>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ donation.memorial.get_absolute_url }}">Back to the memorial</a>
+  </div>
+</div>
+{% endblock %}

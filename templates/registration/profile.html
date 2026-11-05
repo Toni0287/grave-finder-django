@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}My account{% endblock %}
+{% block content %}
+<h1 class="h3">Hello, {{ user.get_full_name|default:user.username }}</h1>
+<p class="text-muted">Account type: {{ user.get_role_display }}</p>
+
+<div class="row g-4">
+  <section class="col-lg-6" aria-labelledby="my-memorials">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 id="my-memorials" class="h5 mb-0">My memorials</h2>
+          <a class="btn btn-sm btn-primary" href="{% url 'memorials:create' %}">New</a>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for m in memorials %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <a href="{{ m.get_absolute_url }}">{{ m.full_name }}</a>
+            <span class="badge {% if m.is_published %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ m.get_status_display }}</span>
+          </li>
+          {% empty %}<li class="list-group-item px-0 text-muted">You have not created a memorial yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section class="col-lg-6" aria-labelledby="my-donations">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 id="my-donations" class="h5">My donations</h2>
+        <ul class="list-group list-group-flush">
+          {% for d in donations %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            <span>R{{ d.amount }} · <a href="{{ d.memorial.get_absolute_url }}">{{ d.memorial.full_name }}</a></span>
+            <span class="small text-muted">{{ d.get_status_display }} · {{ d.created_at|date:"j M Y" }}</span>
+          </li>
+          {% empty %}<li class="list-group-item px-0 text-muted">No donations yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

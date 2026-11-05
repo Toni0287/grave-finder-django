@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Dashboard</h1>
+
+<section class="row g-3 mb-4" aria-label="Totals">
+  <div class="col-6 col-lg"><div class="card stat-card shadow-sm h-100"><div class="card-body"><div class="stat-value">{{ totals.graves|intcomma }}</div><div class="stat-label">Grave records</div></div></div></div>
+  <div class="col-6 col-lg"><div class="card stat-card shadow-sm h-100"><div class="card-body"><div class="stat-value">{{ totals.cemeteries }}</div><div class="stat-label">Cemeteries</div></div></div></div>
+  <div class="col-6 col-lg"><div class="card stat-card shadow-sm h-100"><div class="card-body"><div class="stat-value">{{ totals.public }}</div><div class="stat-label">Public</div></div></div></div>
+  <div class="col-6 col-lg"><div class="card stat-card shadow-sm h-100"><div class="card-body"><div class="stat-value">{{ totals.private }}</div><div class="stat-label">Private</div></div></div></div>
+  <div class="col-12 col-lg"><div class="card stat-card shadow-sm h-100"><div class="card-body"><div class="stat-value">{{ totals.average_age }}</div><div class="stat-label">Average age at death</div></div></div></div>
+</section>
+
+<div class="row g-4">
+  <section class="col-lg-7" aria-labelledby="per-year-title">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 id="per-year-title" class="h6">Burials per year</h2>
+        {% if per_year %}
+        <div class="bar-chart mt-3" role="img" aria-label="Bar chart of burials per year">
+          {% for row in per_year %}
+          <div class="bar" style="height: {% widthratio row.count max_per_year 100 %}%" title="{{ row.year }}: {{ row.count }} burials"></div>
+          {% endfor %}
+        </div>
+        <div class="bar-labels mt-1" aria-hidden="true">{% for row in per_year %}<span>{{ row.year|stringformat:"d"|slice:"2:" }}</span>{% endfor %}</div>
+        <table class="visually-hidden">
+          <caption>Burials per year</caption>
+          {% for row in per_year %}<tr><th>{{ row.year }}</th><td>{{ row.count }}</td></tr>{% endfor %}
+        </table>
+        {% else %}<p class="text-muted">No records yet.</p>{% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="col-lg-5" aria-labelledby="plot-title">
+    <div class="card shadow-sm h-100">
+      <div class="card-body">
+        <h2 id="plot-title" class="h6">Plot sizes</h2>
+        <ul class="list-group list-group-flush">
+          {% for row in plot_sizes %}
+          <li class="list-group-item d-flex justify-content-between px-0">{{ row.plot_size }} <strong>{{ row.count|intcomma }}</strong></li>
+          {% empty %}<li class="list-group-item px-0 text-muted">No records yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="col-12" aria-labelledby="per-cem-title">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 id="per-cem-title" class="h6">Records per cemetery</h2>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle mb-0">
+            <thead><tr><th scope="col">Cemetery</th><th scope="col">Type</th><th scope="col" class="text-end">Records</th><th scope="col" class="text-end">Plots free</th><th scope="col" style="width: 30%">Capacity used</th></tr></thead>
+            <tbody>
+              {% for c in per_cemetery %}
+              <tr>
+                <td><a href="{% url 'cemeteries:search' %}?cemetery={{ c.pk }}">{{ c.name }}</a></td>
+                <td>{{ c.get_type_display }}</td>
+                <td class="text-end">{{ c.grave_count|intcomma }}</td>
+                <td class="text-end">{{ c.available_plots|intcomma }}</td>
+                <td>
+                  <div class="progress" role="progressbar" aria-label="{{ c.name }} capacity used" aria-valuenow="{{ c.occupancy_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 8px">
+                    <div class="progress-bar" style="width: {{ c.occupancy_percent }}%"></div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

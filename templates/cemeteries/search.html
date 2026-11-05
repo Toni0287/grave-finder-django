@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Find a grave{% endblock %}
+{% block head %}{% include "includes/leaflet_head.html" %}{% endblock %}
+
+{% block content %}
+<section class="hero p-4 p-md-5 mb-4" aria-labelledby="hero-title">
+  <h1 id="hero-title" class="h2 fw-semibold">Find a loved one's resting place</h1>
+  <p class="mb-0 opacity-75">
+    Search {{ totals.graves|intcomma }} burial records across {{ totals.cemeteries }} Cape Town cemeteries
+    ({{ totals.public }} public, {{ totals.private }} private), then get directions to the exact grave.
+  </p>
+</section>
+
+<div class="row g-4">
+  <section class="col-lg-4" aria-labelledby="search-title">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 id="search-title" class="h5 mb-3">Search records</h2>
+        <form method="get" novalidate>
+          {% for error in form.non_field_errors %}<div class="alert alert-danger py-2">{{ error }}</div>{% endfor %}
+          <div class="row g-2">
+            <div class="col-6">{% include "includes/field.html" with field=form.first_name %}</div>
+            <div class="col-6">{% include "includes/field.html" with field=form.surname %}</div>
+          </div>
+          {% include "includes/field.html" with field=form.cemetery %}
+          {% include "includes/field.html" with field=form.cemetery_type %}
+          <details class="mb-3" {% if form.min_age.value or form.max_age.value or form.year_of_death.value %}open{% endif %}>
+            <summary class="small text-muted mb-2">More filters</summary>
+            <div class="row g-2">
+              <div class="col-6">{% include "includes/field.html" with field=form.min_age %}</div>
+              <div class="col-6">{% include "includes/field.html" with field=form.max_age %}</div>
+            </div>
+            {% include "includes/field.html" with field=form.year_of_death %}
+          </details>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary flex-grow-1" type="submit"><i class="bi bi-search" aria-hidden="true"></i> Search</button>
+            <a class="btn btn-outline-secondary" href="{% url 'cemeteries:search' %}">Clear</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if breakdown %}
+    <div class="card shadow-sm mt-3">
+      <div class="card-body">
+        <h2 class="h6">Matches by cemetery</h2>
+        <ul class="list-group list-group-flush small">
+          {% for row in breakdown %}
+          <li class="list-group-item d-flex justify-content-between px-0">
+            {{ row.cemetery__name }} <span class="badge text-bg-secondary">{{ row.count }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+
+  <section class="col-lg-8" aria-labelledby="results-title">
+    <div id="results-map" class="map shadow-sm mb-3" role="region" aria-label="Map of search results"></div>
+
+    {% if page is None %}
+      <h2 id="results-title" class="visually-hidden">Results</h2>
+      <p class="text-muted">Enter a name or pick a cemetery to start searching.</p>
+    {% elif page.paginator.count == 0 %}
+      <h2 id="results-title" class="h5">No graves found</h2>
+      <p class="text-muted">Try fewer filters or check the spelling. Partial names work too, for example “Dlam”.</p>
+    {% else %}
+      <h2 id="results-title" class="h5">{{ page.paginator.count|intcomma }} grave{{ page.paginator.count|pluralize }} found</h2>
+      <div class="list-group shadow-sm">
+        {% for grave in page %}
+        <a href="{{ grave.get_absolute_url }}" class="list-group-item list-group-item-action">
+          <div class="d-flex justify-content-between flex-wrap gap-2">
+            <div>
+              <strong>{{ grave.full_name }}</strong>
+              <div class="small text-muted">{{ grave.cemetery.name }} · {{ grave.location_label }}</div>
+            </div>
+            <div class="small text-end">
+              Died {{ grave.date_of_death|date:"j M Y" }}
+              {% if grave.age_at_death %}<div class="text-muted">Aged {{ grave.age_at_death }}</div>{% endif %}
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+      {% if page.has_other_pages %}
+      <nav class="mt-3" aria-label="Result pages">
+        <ul class="pagination justify-content-center">
+          {% if page.has_previous %}<li class="page-item"><a class="page-link" href="?{{ querystring }}&page={{ page.previous_page_number }}">Previous</a></li>{% endif %}
+          <li class="page-item disabled"><span class="page-link">Page {{ page.number }} of {{ page.paginator.num_pages }}</span></li>
+          {% if page.has_next %}<li class="page-item"><a class="page-link" href="?{{ querystring }}&page={{ page.next_page_number }}">Next</a></li>{% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    {% endif %}
+  </section>
+</div>
+{{ markers|json_script:"markers-data" }}
+{% endblock %}
+
+{% block scripts %}
+{% include "includes/leaflet_scripts.html" %}
+<script>GraveFinder.markerMap("results-map", "markers-data");</script>
+{% endblock %}

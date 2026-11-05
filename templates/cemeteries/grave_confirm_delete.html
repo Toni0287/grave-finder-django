@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Remove {{ grave.full_name }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h1 class="h4">Remove {{ grave.full_name }}?</h1>
+        <p>The record will be hidden from search. It is kept in the database for the audit trail and can be restored from the admin site.</p>
+        <form method="post" class="d-flex gap-2">
+          {% csrf_token %}
+          <button class="btn btn-danger" type="submit">Remove record</button>
+          <a class="btn btn-outline-secondary" href="{{ grave.get_absolute_url }}">Cancel</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

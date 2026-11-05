@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Redirecting to PayFast{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+  <h1 class="h4">Taking you to PayFast to pay R{{ donation.amount }}…</h1>
+  <form id="payfast-form" method="post" action="{{ action }}">
+    {% for name, value in fields.items %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+    <button class="btn btn-donate mt-3" type="submit">Continue to PayFast</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script>document.getElementById("payfast-form").submit();</script>{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block title %}Cemeteries{% endblock %}
+{% block head %}{% include "includes/leaflet_head.html" %}{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-3">Cemeteries</h1>
+<div id="cemetery-map" class="map shadow-sm mb-4" role="region" aria-label="Map of cemeteries"></div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+  {% for cemetery in cemeteries %}
+  <div class="col">
+    <article class="card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <h2 class="h6 mb-1">{{ cemetery.name }}</h2>
+          <span class="badge {% if cemetery.type == 'public' %}text-bg-info{% else %}text-bg-warning{% endif %}">{{ cemetery.get_type_display }}</span>
+        </div>
+        <p class="small text-muted mb-2">{{ cemetery.address }}</p>
+        <p class="small mb-2">{{ cemetery.description }}</p>
+        <div class="small mb-1">{{ cemetery.grave_count|intcomma }} records · {{ cemetery.available_plots|intcomma }} plots available</div>
+        <div class="progress" role="progressbar" aria-label="Capacity used" aria-valuenow="{{ cemetery.occupancy_percent }}" aria-valuemin="0" aria-valuemax="100" style="height: 6px">
+          <div class="progress-bar" style="width: {{ cemetery.occupancy_percent }}%"></div>
+        </div>
+      </div>
+      <div class="card-footer bg-white">
+        <a class="btn btn-sm btn-outline-primary" href="{% url 'cemeteries:search' %}?cemetery={{ cemetery.pk }}">Search this cemetery</a>
+      </div>
+    </article>
+  </div>
+  {% endfor %}
+</div>
+{{ markers|json_script:"cemetery-data" }}
+{% endblock %}
+
+{% block scripts %}
+{% include "includes/leaflet_scripts.html" %}
+<script>GraveFinder.markerMap("cemetery-map", "cemetery-data");</script>
+{% endblock %}

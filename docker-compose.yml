@@ -1,0 +1,14 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-before-deploying}
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      PAYFAST_MODE: ${PAYFAST_MODE:-demo}
+    volumes:
+      - gravefinder_data:/app/data
+
+volumes:
+  gravefinder_data:

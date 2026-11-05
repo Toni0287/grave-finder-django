@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Grave record · {{ grave.full_name }}</title>
+  <style>
+    body { font-family: Georgia, serif; max-width: 680px; margin: 40px auto; color: #222; padding: 0 16px; }
+    h1 { font-size: 1.8rem; margin-bottom: 0; }
+    .sub { color: #666; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+    th, td { text-align: left; padding: 8px 4px; border-bottom: 1px solid #ddd; vertical-align: top; }
+    th { width: 38%; font-weight: normal; color: #555; }
+    footer { margin-top: 32px; font-size: .8rem; color: #777; }
+    @media print { button { display: none; } }
+  </style>
+</head>
+<body>
+  <button onclick="window.print()">Print this page</button>
+  <h1>{{ grave.full_name }}</h1>
+  <p class="sub">{% if grave.birth_year %}{{ grave.birth_year }} – {% endif %}{{ grave.date_of_death|date:"Y" }}{% if grave.age_at_death %} · aged {{ grave.age_at_death }}{% endif %}</p>
+  <table>
+    <tr><th>Cemetery</th><td>{{ grave.cemetery.name }} ({{ grave.cemetery.get_type_display }})</td></tr>
+    <tr><th>Address</th><td>{{ grave.cemetery.address }}</td></tr>
+    <tr><th>Section / plot / grave</th><td>{{ grave.location_label }}</td></tr>
+    <tr><th>Plot size</th><td>{{ grave.plot_size }}</td></tr>
+    <tr><th>Date of death</th><td>{{ grave.date_of_death|date:"j F Y" }}</td></tr>
+    <tr><th>Date of burial</th><td>{{ grave.date_of_burial|date:"j F Y"|default:"—" }}</td></tr>
+    <tr><th>GPS coordinates</th><td>{{ grave.latitude|floatformat:5 }}, {{ grave.longitude|floatformat:5 }}</td></tr>
+  </table>
+  <footer>Printed from Grave Finder on {{ now|date:"j F Y" }} · {{ request.build_absolute_uri }}</footer>
+</body>
+</html>

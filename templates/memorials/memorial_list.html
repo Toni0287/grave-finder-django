@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Memorials{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0">Memorials</h1>
+  <a class="btn btn-primary" href="{% url 'memorials:create' %}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Create a memorial</a>
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+  {% for memorial in memorials %}
+  <div class="col">
+    <article class="card h-100 shadow-sm text-center">
+      <div class="card-body">
+        {% if memorial.photo_url %}
+          <img src="{{ memorial.photo_url }}" alt="Photo of {{ memorial.full_name }}" class="memorial-photo mb-3" style="width:96px;height:96px">
+        {% else %}
+          <div class="memorial-photo-placeholder mx-auto mb-3" style="width:96px;height:96px;font-size:2rem" aria-hidden="true"><i class="bi bi-flower1"></i></div>
+        {% endif %}
+        <h2 class="h6 mb-1"><a class="stretched-link text-decoration-none" href="{{ memorial.get_absolute_url }}">{{ memorial.full_name }}</a></h2>
+        <p class="small text-muted mb-1">{{ memorial.birth_date|date:"Y"|default:"" }}{% if memorial.birth_date and memorial.death_date %} – {% endif %}{{ memorial.death_date|date:"Y"|default:"" }}</p>
+        {% if memorial.tagline %}<p class="small fst-italic mb-0">{{ memorial.tagline }}</p>{% endif %}
+      </div>
+    </article>
+  </div>
+  {% empty %}
+  <p class="text-muted">No memorials have been published yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
